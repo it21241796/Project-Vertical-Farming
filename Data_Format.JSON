@@ -1,0 +1,92 @@
+{
+    "sensorData": {
+      "latest": {
+        "temperature": {
+          "sensor1": 25.4,
+          "sensor2": 26.1,
+          "sensor3": 24.8,
+          "sensor4": 25.0,
+          "average": 25.3
+        },
+        "humidity": {
+          "sensor1": 60.2,
+          "sensor2": 59.8,
+          "sensor3": 60.5,
+          "sensor4": 60.0,
+          "average": 60.1
+        },
+        "light": {
+          "sensor1": 500,
+          "sensor2": 520,
+          "sensor3": 510,
+          "sensor4": 505,
+          "average": 511
+        },
+        "nitrogen": 15.2,
+        "phosphorus": 10.5,
+        "potassium": 12.3
+      },
+      "history": {
+        "tempHumidity": [
+          {
+            "time": "2025-02-17T08:00:00.000Z",
+            "temperature": 25.3,
+            "humidity": 60.1
+          },
+          {
+            "time": "2025-02-17T08:01:00.000Z",
+            "temperature": 25.4,
+            "humidity": 60.0
+          }
+        ],
+        "light": [
+          {
+            "time": "2025-02-17T08:00:00.000Z",
+            "light": 511
+          },
+          {
+            "time": "2025-02-17T08:01:00.000Z",
+            "light": 512
+          }
+        ],
+        "npk": [
+          {
+            "time": "2025-02-17T08:00:00.000Z",
+            "nitrogen": 15.2,
+            "phosphorus": 10.5,
+            "potassium": 12.3
+          },
+          {
+            "time": "2025-02-17T08:01:00.000Z",
+            "nitrogen": 15.3,
+            "phosphorus": 10.4,
+            "potassium": 12.4
+          }
+        ]
+      }
+    },
+    "equipment": {
+      "fans": [
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" }
+      ],
+      "lights": [
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" }
+      ],
+      "humidifiers": [
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" }
+      ],
+      "valves": [
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" },
+        { "status": "off", "mode": "manual" }
+      ]
+    }
+  }
