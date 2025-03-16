@@ -20,12 +20,14 @@ const AdminDashboard = () => {
     const [isPasswordReset, setIsPasswordReset] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [newUser, setNewUser] = useState({
-        username: '',
+        name: '',
         email: '',
         password: '',
         mobile: '',
         isAdmin: false
     });
+
+    const loggedInUserId = sessionStorage.getItem('userId');
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -43,7 +45,10 @@ const AdminDashboard = () => {
 
     const fetchUsers = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/admin/users', {
+            const params = new URLSearchParams();
+            const admina = sessionStorage.getItem('admin');
+            params.append('userId', admina);
+            const response = await fetch(`http://localhost:30001/api/admin/ghuser?${params.toString()}`, {
                 credentials: 'include'
             });
             if (!response.ok) throw new Error('Failed to fetch users');
@@ -56,7 +61,10 @@ const AdminDashboard = () => {
 
     const fetchAdmins = useCallback(async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/admin/admins', {
+            const params = new URLSearchParams();
+            const admina = sessionStorage.getItem('admin');
+            params.append('userId', admina);
+            const response = await fetch(`http://localhost:30001/api/admin/adminuser?${params.toString()}`, {
                 credentials: 'include'
             });
             if (!response.ok) throw new Error('Failed to fetch admins');
@@ -67,24 +75,50 @@ const AdminDashboard = () => {
         }
     }, [addToast]);
 
-    const handleCreate = async (e) => {
+    const handleCreateU = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3001/api/admin/create-user', {
+            const admina = sessionStorage.getItem('admin');
+            const response = await fetch('http://localhost:30001/api/login/ghuseronboarding', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...newUser,
+                    ghId: "GH-002",
+                    createUser: admina,
                     isAdmin: activeTab === 'admins'
                 }),
-                credentials: 'include'
             });
 
             if (!response.ok) throw new Error('Failed to create user');
 
             addToast(`Created successfully`, 'success');
-            setNewUser({ username: '', email: '', password: '', mobile: '', isAdmin: false });
+            setNewUser({ name: '', email: '', password: '', mobile: '', isAdmin: false });
             fetchUsers();
+        } catch (err) {
+            addToast(err.message, 'error');
+        }
+    };
+
+    const handleCreateA = async (e) => {
+        e.preventDefault();
+
+        try {
+            const admina = sessionStorage.getItem('admin');
+            const response = await fetch('http://localhost:30001/api/login/adminuseronboarding', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...newUser,
+                    createUser: admina,
+                    isAdmin: activeTab === 'admins'
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to create user');
+
+            addToast(`Created successfully`, 'success');
+            setNewUser({ name: '', email: '', password: '', mobile: '', isAdmin: false });
             fetchAdmins();
         } catch (err) {
             addToast(err.message, 'error');
@@ -94,14 +128,19 @@ const AdminDashboard = () => {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            const type = editingItem.isAdmin ? 'admin' : 'user';
+            const admina = sessionStorage.getItem('admin');
+            const type = editingItem.isAdmin ? 'adminupdate' : 'userupdate';
             const data = {
-                username: editingItem.USERNAME,
-                email: editingItem.EMAIL,
-                mobile: editingItem.MOBILE
+                UserID: admina,
+                UpdateUserID: editingItem.ID,
+                X: "Email", // Assuming you want to update the email
+                Value: editingItem.EMAIL
+                // name: editingItem.USERNAME,
+                // email: editingItem.EMAIL,
+                // mobile: editingItem.MOBILE
             };
 
-            const response = await fetch(`http://localhost:3001/api/admin/update/${type}/${editingItem.ID}`, {
+            const response = await fetch(`http://34.81.61.11:30001/api/admin/${type}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
@@ -112,7 +151,7 @@ const AdminDashboard = () => {
 
             addToast('Updated successfully', 'success');
             setEditingItem(null);
-            if (type === 'admin') {
+            if (type === 'adminupdate') {
                 fetchAdmins();
             } else {
                 fetchUsers();
@@ -125,10 +164,15 @@ const AdminDashboard = () => {
     const handlePasswordReset = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch(`http://localhost:3001/api/admin/reset-password/${editingItem.ID}`, {
-                method: 'PUT',
+            const response = await fetch('http://34.81.61.11:30001/api/admin/adminupdate', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: newPassword }),
+                body: JSON.stringify({
+                    UserID: loggedInUserId,
+                    UpdateUserID: editingItem.ID,
+                    X: "Password",
+                    Value: newPassword
+                }),
                 credentials: 'include'
             });
 
@@ -147,8 +191,15 @@ const AdminDashboard = () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
 
         try {
-            const response = await fetch(`http://localhost:3001/api/admin/delete/${type}/${id}`, {
-                method: 'DELETE',
+            const admina = sessionStorage.getItem('admin');
+            const endpoint = type === 'user' ? 'userdelete' : 'admindelete';
+            const response = await fetch(`http://localhost:30001/api/admin/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    UserID: admina,
+                    deleteUserID: id
+                }),
                 credentials: 'include'
             });
 
@@ -164,7 +215,7 @@ const AdminDashboard = () => {
 
     const handleLogout = async () => {
         try {
-            await fetch('http://localhost:3001/api/admin/logout', {
+            await fetch('http://localhost:30001/api/admin/logout', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -188,8 +239,13 @@ const AdminDashboard = () => {
     const searchUsers = async (query) => {
         try {
             const response = await fetch(
-                `http://localhost:3001/api/admin/users/search?query=${encodeURIComponent(query)}`,
-                { credentials: 'include' }
+                `http://34.81.61.11:30001/api/admin/ghuser`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UserID: loggedInUserId, query: query }),
+                    credentials: 'include'
+                }
             );
             if (!response.ok) throw new Error('Search failed');
             const data = await response.json();
@@ -202,8 +258,13 @@ const AdminDashboard = () => {
     const searchAdmins = async (query) => {
         try {
             const response = await fetch(
-                `http://localhost:3001/api/admin/admins/search?query=${encodeURIComponent(query)}`,
-                { credentials: 'include' }
+                `http://34.81.61.11:30001/api/admin/adminuser`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UserID: loggedInUserId, query: query }),
+                    credentials: 'include'
+                }
             );
             if (!response.ok) throw new Error('Search failed');
             const data = await response.json();
@@ -248,6 +309,7 @@ const AdminDashboard = () => {
         setIsSearching(false);
     }, [activeTab]);
 
+
     const UsersListContent = () => (
         <Card>
             <CardHeader>
@@ -275,11 +337,13 @@ const AdminDashboard = () => {
                         <p className="text-center text-gray-500 py-4">No users available</p>
                     ) : (
                         users.map(user => (
-                            <div key={user.ID} className="py-4 flex justify-between items-center">
+                            <div key={user.id} className="py-4 flex justify-between items-center">
                                 <div>
-                                    <p className="font-medium">{user.USERNAME}</p>
-                                    <p className="text-sm text-gray-500">{user.EMAIL}</p>
-                                    <p className="text-sm text-gray-500">{user.MOBILE}</p>
+                                    <p className="font-medium">{user.name}</p>
+                                    <p className="text-sm text-gray-500">{user.email}</p>
+                                    <p className="text-sm text-gray-500">{user.mobile}</p>
+                                    <p className="text-sm text-gray-500">{user.greenhouseId}</p>
+                                    <p className="text-sm text-gray-500">{user.status}</p>
                                 </div>
                                 <div className="flex space-x-2">
                                     <Button
@@ -306,7 +370,7 @@ const AdminDashboard = () => {
                                         className="bg-red-500 hover:bg-red-500"
                                         variant="destructive"
                                         size="sm"
-                                        onClick={() => handleDelete('user', user.ID)}
+                                        onClick={() => handleDelete('user', user.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -359,24 +423,26 @@ const AdminDashboard = () => {
                     ) : admins.length === 0 ? (
                         <p className="text-center text-gray-500 py-4">No admins available</p>
                     ) : (
-                        admins.map(admin => (
-                            <div key={admin.ID} className="py-4 flex justify-between items-center">
+                        admins.map(admins => (
+                            <div key={admins.id} className="py-4 flex justify-between items-center">
                                 <div>
-                                    <p className="font-medium">{admin.USERNAME}</p>
-                                    <p className="text-sm text-gray-500">{admin.EMAIL}</p>
+                                    <p className="font-medium">{admins.name}</p>
+                                    <p className="text-sm text-gray-500">{admins.email}</p>
+                                    <p className="text-sm text-gray-500">{admins.status}</p>
+                                    {/* <p className="text-sm text-gray-500">{admins.mobile}</p> */}
                                 </div>
                                 <div className="flex space-x-2">
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => setEditingItem({ ...admin, isAdmin: true })}
+                                        onClick={() => setEditingItem({ ...admins, isAdmin: true })}
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                     <Button className="bg-red-500 hover:bg-red-500"
                                         variant="destructive"
                                         size="sm"
-                                        onClick={() => handleDelete('admin', admin.ID)}
+                                        onClick={() => handleDelete('admin', admins.id)}
                                     >
                                         <Trash2 className="h-4 w-4 bg-red-500 hover:bg-red-500" />
                                     </Button>
@@ -424,11 +490,11 @@ const AdminDashboard = () => {
                                     <CardTitle>Create New User</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <form onSubmit={handleCreate} className="space-y-4 space-x-4">
+                                    <form onSubmit={handleCreateU} className="space-y-4 space-x-4">
                                         <Input
                                             placeholder="Username"
-                                            value={newUser.username}
-                                            onChange={e => setNewUser({ ...newUser, username: e.target.value })}
+                                            value={newUser.name}
+                                            onChange={e => setNewUser({ ...newUser, name: e.target.value })}
                                             required
                                         />
                                         <Input
@@ -457,56 +523,6 @@ const AdminDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            {/* Users List */}
-                            {/* <Card>
-                                <CardHeader>
-                                    <CardTitle>Users List</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="divide-y">
-                                        {users.length === 0 ? (
-                                            <p className="text-center text-gray-500 py-4">No users found</p>
-                                        ) : (
-                                            users.map(user => (
-                                                <div key={user.ID} className="py-4 flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-medium">{user.USERNAME}</p>
-                                                        <p className="text-sm text-gray-500">{user.EMAIL}</p>
-                                                        <p className="text-sm text-gray-500">{user.MOBILE || 'No mobile number'}</p>
-                                                    </div>
-                                                    <div className="flex space-x-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setEditingItem({ ...user, isAdmin: false })}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setIsPasswordReset(true);
-                                                                setEditingItem({ ...user, isAdmin: false });
-                                                            }}
-                                                        >
-                                                            <Lock className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            className="bg-red-500 hover:bg-red-500"
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => handleDelete('user', user.ID)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card> */}
                             <UsersListContent />
                         </div>
                     </TabsContent>
@@ -519,11 +535,11 @@ const AdminDashboard = () => {
                                     <CardTitle>Create New Admin</CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <form onSubmit={handleCreate} className="space-y-4 space-x-4">
+                                    <form onSubmit={handleCreateA} className="space-y-4 space-x-4">
                                         <Input
                                             placeholder="Username"
-                                            value={newUser.username}
-                                            onChange={e => setNewUser({ ...newUser, username: e.target.value, isAdmin: true })}
+                                            value={newUser.name}
+                                            onChange={e => setNewUser({ ...newUser, name: e.target.value, isAdmin: true })}
                                             required
                                         />
                                         <Input
@@ -533,6 +549,13 @@ const AdminDashboard = () => {
                                             onChange={e => setNewUser({ ...newUser, email: e.target.value, isAdmin: true })}
                                             required
                                         />
+                                        {/* <Input
+                                            type="tel"
+                                            placeholder="Mobile Number"
+                                            value={newUser.mobile}
+                                            onChange={e => setNewUser({ ...newUser, mobile: e.target.value })}
+                                            required
+                                        /> */}
                                         <Input
                                             type="password"
                                             placeholder="Password"
@@ -545,44 +568,6 @@ const AdminDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            {/* Admins List */}
-                            {/* <Card>
-                                <CardHeader>
-                                    <CardTitle>Admins List</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="divide-y">
-                                        {admins.length === 0 ? (
-                                            <p className="text-center text-gray-500 py-4">No admins found</p>
-                                        ) : (
-                                            admins.map(admin => (
-                                                <div key={admin.ID} className="py-4 flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-medium">{admin.USERNAME}</p>
-                                                        <p className="text-sm text-gray-500">{admin.EMAIL}</p>
-                                                    </div>
-                                                    <div className="flex space-x-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => setEditingItem({ ...admin, isAdmin: true })}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button className="bg-red-500 hover:bg-red-500"
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => handleDelete('admin', admin.ID)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4 bg-red-500 hover:bg-red-500" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card> */}
                             <AdminsListContent />
                         </div>
                     </TabsContent>

@@ -4,16 +4,7 @@ import { Button } from '../Components/ui/button';
 import { UserCircle, Leaf, LogOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../Components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../Components/ui/tabs';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useToast } from '../Components/ui/toast';
 import { Select } from '../Components/ui/select';
@@ -23,6 +14,7 @@ import 'react-resizable/css/styles.css';
 import '../App.css';
 import { database } from "../firebase";
 import { ref, get } from "firebase/database";
+import AnalysisPanel from './aicontrol';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -53,7 +45,7 @@ const DashboardHeader = () => {
         </div>
         <h1 className="text-2xl font-bold text-green-800">Smart Greenhouse</h1>
         <div className="flex items-center space-x-4">
-          <span className="text-gray-700 font-bold">Welcome, {userInfo.username}!</span>
+          <span className="text-gray-700 font-bold">Welcome, {userInfo.name}!</span>
           <Button
             onClick={() => navigate('/userprofile')}
             variant="outline"
@@ -511,6 +503,9 @@ const Dashboard = () => {
           <TabsTrigger value="control" setSelectedTab={setActiveTab} selectedTab={activeTab}>
             Control Panel
           </TabsTrigger>
+          <TabsTrigger value="analysis" setSelectedTab={setActiveTab} selectedTab={activeTab}>
+            AI Analysis Panel
+          </TabsTrigger>
         </TabsList>
         {activeTab === "dashboard" ? (
           <TabsContent value="dashboard" selectedTab={activeTab}>
@@ -602,10 +597,15 @@ const Dashboard = () => {
               </div>
             </ResponsiveGridLayout>
           </TabsContent>
-        ) : (
+        ) : (activeTab === "control" ? (
           <TabsContent value="control" selectedTab={activeTab}>
             <ControlPanel />
           </TabsContent>
+        ) : (
+          <TabsContent value="analysis" selectedTab={activeTab}>
+            <AnalysisPanel />
+          </TabsContent>
+        )
         )}
       </Tabs>
     </div>

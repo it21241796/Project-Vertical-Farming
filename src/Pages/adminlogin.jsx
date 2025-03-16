@@ -24,7 +24,7 @@ const AdminLogin = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:3001/api/admin/login', {
+            const response = await fetch('http://localhost:30001/api/login/adminlogin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -36,9 +36,8 @@ const AdminLogin = () => {
             if (!response.ok) {
                 throw new Error(data.message);
             }
-
             // Store admin data in session storage
-            sessionStorage.setItem('admin', JSON.stringify(data.admin));
+            sessionStorage.setItem('admin', data.admin.id);
             addToast('Logged in successfully', 'success');
             navigate('/admin-dashboard');
         } catch (err) {

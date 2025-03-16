@@ -28,37 +28,31 @@ const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+    console.log(formData)
     try {
       // Bypass the authentication process
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User'
-      };
+      // const mockUser = {
+      //   id: 1,
+      //   email: 'test@example.com',
+      //   name: 'Test User'
+      // };
 
-      sessionStorage.setItem('user', JSON.stringify(mockUser));
-      addToast('Logged in successfully', 'success');
-
-      // try {
-      //   const response = await fetch('http://localhost:3001/api/auth/signin', {
-      //     method: 'POST',
-      //     headers: { 'Content-Type': 'application/json' },
-      //     body: JSON.stringify({
-      //       email: formData.email,
-      //       password: formData.password
-      //     }),
-      //     credentials: 'include'
-      //   });
-
-      //   const data = await response.json();
-
-      //   if (!response.ok) {
-      //     throw new Error(data.message);
-      //   }
-
-      // sessionStorage.setItem('user', JSON.stringify(data.user));
+      // sessionStorage.setItem('user', JSON.stringify(mockUser));
       // addToast('Logged in successfully', 'success');
+        const response = await fetch('http://localhost:30001/api/login/userlogin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message);
+        }
+      sessionStorage.setItem('user', JSON.stringify(data.user));
+      addToast('Logged in successfully', 'success');
 
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
