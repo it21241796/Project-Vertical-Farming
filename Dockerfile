@@ -1,11 +1,23 @@
-FROM nginx:stable-alpine3.20-perl
+# Use Node.js for build stage
+FROM node:18 AS build
 
-ENV NGINX_HOME=/usr/share/nginx/html/
-ENV NGINX_ETC=/etc/nginx/conf.d
+# Set working directory
+WORKDIR /app
 
-USER root
+# Copy package.json and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
 
-COPY nginx.conf ${NGINX_ETC}
-COPY build/* ${NGINX_HOME}
+# Copy source files and build the React app
+COPY . .
+RUN npm run build
 
+# Use Nginx for serving the app
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 9191
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
